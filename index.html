@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#090a0f" media="(prefers-color-scheme: dark)">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:;">
+  <title>PDFCraft Studio — Complete 100% Client-Side PDF Tools</title>
+  <meta name="description" content="All-in-one PDF tools: Merge, Split, Compress, Convert, Sign, Watermark, and Protect PDFs directly in your browser. 100% private, free, and secure.">
+  
+  <!-- Apple-Style Minimal Jewel SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='8' y1='6' x2='40' y2='42'><stop offset='0%25' stop-color='%2300c7be'/><stop offset='35%25' stop-color='%230071e3'/><stop offset='100%25' stop-color='%236366f1'/></linearGradient><linearGradient id='f' x1='28' y1='6' x2='40' y2='18'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%2393c5fd'/></linearGradient></defs><rect width='48' height='48' rx='13' fill='%230f172a'/><path d='M14 8C11.8 8 10 9.8 10 12V36C10 38.2 11.8 40 14 40H34C36.2 40 38 38.2 38 36V18L28 8H14Z' fill='url(%23g)'/><path d='M28 8V16C28 17.1 28.9 18 30 18H38L28 8Z' fill='url(%23f)'/><line x1='16' y1='24' x2='32' y2='24' stroke='white' stroke-width='2.5' stroke-linecap='round'/><line x1='16' y1='29' x2='27' y2='29' stroke='white' stroke-width='2' stroke-linecap='round' stroke-opacity='0.8'/></svg>">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./src/styles.css">
+  
+  <!-- Vendor Libraries (Local offline first, with CDN fallback) -->
+  <script src="./vendor/pdf-lib.min.js"></script>
+  <script src="./vendor/pdf.min.js"></script>
+  <script src="./vendor/jszip.min.js"></script>
+  <script src="./vendor/xlsx.full.min.js"></script>
+  <script src="./vendor/mammoth.browser.min.js"></script>
+  <script src="./vendor/marked.min.js"></script>
+  <script src="./vendor/confetti.browser.min.js"></script>
+  <script src="./vendor/lucide.min.js"></script>
+</head>
+<body>
+  <!-- Ambient Liquid Glass Background Orbs (Apple Design Language) -->
+  <div class="ambient-mesh-glow" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+    <div class="ambient-orb orb-4"></div>
+    <div class="ambient-orb orb-5"></div>
+  </div>
+
+  <!-- Apple Navigation Bar -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="brand" id="brand-home">
+        <div class="brand-icon" id="brand-logo-container" title="PDFCraft Studio • Apple Silicon Optimized">
+          <svg class="brand-logo-svg" viewBox="0 0 48 48" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Deep Apple Cupertino Pro Gradient -->
+              <linearGradient id="appleDocGrad" x1="10" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00c7be" />
+                <stop offset="35%" stop-color="#0071e3" />
+                <stop offset="100%" stop-color="#6366f1" />
+              </linearGradient>
+
+              <!-- Metallic Platinum & Sky Fold Gradient -->
+              <linearGradient id="appleFoldGrad" x1="28" y1="6" x2="40" y2="18" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="50%" stop-color="#e0f2fe" />
+                <stop offset="100%" stop-color="#93c5fd" />
+              </linearGradient>
+
+              <!-- Glass Diagonal Specular Gradient -->
+              <linearGradient id="appleSpecularGrad" x1="10" y1="6" x2="36" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+                <stop offset="35%" stop-color="#ffffff" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+              </linearGradient>
+
+              <!-- Realistic Drop Shadow for 3D Fold -->
+              <filter id="foldShadow" x="22" y="4" width="22" height="22" filterUnits="userSpaceOnUse">
+                <feDropShadow dx="-2" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.35" />
+              </filter>
+            </defs>
+
+            <!-- Ambient Under-Glow Aura -->
+            <rect x="8" y="7" width="32" height="36" rx="9" fill="url(#appleDocGrad)" opacity="0.4" filter="blur(4px)" />
+
+            <!-- Rear Translucent Glass Sheet -->
+            <path d="M12 9C9.79 9 8 10.79 8 13V37C8 39.21 9.79 41 12 41H32C34.21 41 36 39.21 36 37V16L29 9H12Z" 
+                  fill="#ffffff" fill-opacity="0.2" stroke="rgba(255,255,255,0.45)" stroke-width="1.2" />
+
+            <!-- Master Front Sheet with 45deg Precision Fold -->
+            <path d="M14 6C11.79 6 10 7.79 10 10V38C10 40.21 11.79 42 14 42H36C38.21 42 40 40.21 40 38V18L28 6H14Z" 
+                  fill="url(#appleDocGrad)" />
+
+            <!-- Specular Glass Refraction Sheen -->
+            <path d="M14 6C11.79 6 10 7.79 10 10V28L32 6H14Z" 
+                  fill="url(#appleSpecularGrad)" />
+
+            <!-- Fold Shadow under Ear -->
+            <path d="M28 6L40 18H31C29.34 18 28 16.66 28 15V6Z" 
+                  filter="url(#foldShadow)" fill="rgba(0,0,0,0.3)" />
+
+            <!-- 3D Precision Folded Ear Corner -->
+            <path d="M28 6V15C28 16.66 29.34 18 31 18H40L28 6Z" 
+                  fill="url(#appleFoldGrad)" stroke="rgba(255,255,255,0.95)" stroke-width="0.8" />
+
+            <!-- Laser Cut Precision Document Content Lines -->
+            <line x1="16" y1="24" x2="34" y2="24" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-opacity="0.95" />
+            <line x1="16" y1="29.5" x2="28" y2="29.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-opacity="0.85" />
+            <line x1="16" y1="35" x2="23" y2="35" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-opacity="0.65" />
+
+            <!-- Apple Diamond Specular Lens Flare Glint -->
+            <path d="M28 6C28.3 7.2 28.9 7.8 30.1 8.1C28.9 8.4 28.3 9 28 10.2C27.7 9 27.1 8.4 25.9 8.1C27.1 7.8 27.7 7.2 28 6Z" 
+                  fill="#ffffff" />
+          </svg>
+        </div>
+        <div class="brand-text-container">
+          <div class="brand-title-row">
+            <span class="brand-title-text" id="site-title-text">PDFCraft</span>
+            <span class="apple-pro-badge">PRO STUDIO</span>
+          </div>
+          <span class="brand-subtitle-text">macOS Sequoia • 100% On-Device</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" id="nav-category-tabs">
+        <button class="nav-tab-btn active" data-category="all" id="tab-all">All Tools</button>
+        <button class="nav-tab-btn" data-category="organize" id="tab-organize">Organize</button>
+        <button class="nav-tab-btn" data-category="convert" id="tab-convert">Convert</button>
+        <button class="nav-tab-btn" data-category="edit" id="tab-edit">Edit & Sign</button>
+        <button class="nav-tab-btn" data-category="security" id="tab-security">Security</button>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <button class="lang-toggle-btn" id="lang-btn" title="Switch Language / भाषा बदलें">
+          <span id="lang-flag">🇮🇳</span>
+          <span id="lang-label">हिन्दी</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="theme-btn" title="Toggle Dark/Light Mode">
+          <i data-lucide="moon" id="theme-icon" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Apple System Sub-Ribbon -->
+  <div class="apple-sub-ribbon" aria-hidden="true">
+    <span class="apple-sub-item">macOS Sequoia & Apple Silicon Optimized</span>
+    <span class="apple-sub-dot">•</span>
+    <span class="apple-sub-item">100% On-Device Client Privacy</span>
+    <span class="apple-sub-dot">•</span>
+    <span class="apple-sub-item">Studio Master 300 DPI Lossless Engine</span>
+  </div>
+
+  <!-- Main Dashboard Container -->
+  <main id="dashboard-view">
+    <!-- Hero Banner (Apple Keynote Style) -->
+    <section class="hero">
+      <div class="privacy-badge">
+        <span class="privacy-pulse-dot" aria-hidden="true"></span>
+        <span id="privacy-badge-text">100% On-Device Privacy • Studio Master 300 DPI Quality</span>
+      </div>
+      <h1 class="hero-title" id="hero-title-text">PDFCraft Studio Pro.</h1>
+      <p class="hero-subtitle" id="hero-sub-text">Incredible PDF power. All on-device. Top-notch 300 DPI Studio Master quality designed to feel right at home on macOS Sequoia & visionOS.</p>
+
+      <!-- Search Input (Apple Spotlight) -->
+      <div class="search-container">
+        <i data-lucide="search" class="search-icon-svg" style="width: 18px; height: 18px;"></i>
+        <input type="text" id="tool-search-input" class="search-input" placeholder="Search any PDF tool (e.g. merge, compress, sign, bates)...">
+      </div>
+    </section>
+
+    <!-- Tools Grid Section -->
+    <section class="tools-section">
+      <div class="tools-grid" id="tools-grid">
+        <!-- Dynamic Tool Cards rendered by app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Tool Workspace View (Visible when a tool is selected) -->
+  <section class="workspace-view" id="workspace-view">
+    <div class="workspace-header">
+      <button class="back-btn" id="btn-back-home">
+        <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+        <span id="back-btn-text">Back to All Tools</span>
+      </button>
+      <div class="workspace-title-box">
+        <h2 class="workspace-title" id="ws-tool-title">Merge PDF</h2>
+        <p class="workspace-desc" id="ws-tool-desc">Combine multiple PDFs into one document.</p>
+      </div>
+    </div>
+
+    <!-- Dropzone Area -->
+    <div class="dropzone" id="ws-dropzone">
+      <input type="file" id="file-input" style="display: none;" multiple>
+      <div class="dropzone-icon">
+        <i data-lucide="upload-cloud" style="width: 32px; height: 32px;"></i>
+      </div>
+      <div class="dropzone-text" id="dropzone-text">Drop PDF files here, or click to browse</div>
+      <div class="dropzone-subtext" id="dropzone-subtext">All processing happens locally on your computer</div>
+      <button class="primary-btn" id="btn-browse" type="button">
+        <i data-lucide="folder-open" style="width: 18px; height: 18px;"></i>
+        <span id="btn-browse-text">Select Files</span>
+      </button>
+    </div>
+
+    <!-- Workspace Main Layout (Active once files are loaded) -->
+    <div class="workspace-content" id="ws-active-content" style="display: none;">
+      <!-- Left: Interactive Preview & File Area -->
+      <div class="workspace-preview-area" id="ws-preview-area">
+        <!-- Injected dynamically per tool -->
+      </div>
+
+      <!-- Right: Settings & Action Sidebar -->
+      <div class="workspace-sidebar" id="ws-sidebar">
+        <!-- Dynamic sidebar controls per tool -->
+        <div id="ws-custom-controls"></div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+          <button class="primary-btn" id="btn-process-action" style="width: 100%; justify-content: center;">
+            <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
+            <span id="btn-process-text">Process PDF</span>
+          </button>
+          
+          <button class="secondary-btn" id="btn-add-more" style="width: 100%; justify-content: center;">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            <span id="btn-add-more-text">Add More Files</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress / Processing Modal -->
+  <div class="modal-overlay" id="progress-modal">
+    <div class="modal-box">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;">
+        <i data-lucide="loader-2" id="spin-icon" style="width: 30px; height: 30px; animation: spin 1.2s linear infinite;"></i>
+      </div>
+      <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;" id="progress-modal-title">Processing your PDF...</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);" id="progress-modal-desc">Optimizing and encoding document directly in your browser...</p>
+      
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);" id="progress-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- Success / Download Modal -->
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal-box">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;">
+        <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+      </div>
+      <h3 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 0.5rem;" id="success-title">Your PDF is Ready!</h3>
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="success-desc">The task finished successfully without any server upload.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a id="btn-download-result" class="primary-btn" style="justify-content: center; text-decoration: none; font-size: 1.05rem; padding: 1rem;">
+          <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+          <span id="btn-download-text">Download File</span>
+        </a>
+        <button id="btn-process-another" class="secondary-btn" style="justify-content: center;">
+          <span id="btn-another-text">Process Another File</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Apple Pro Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="apple-footer-notes">
+        <p>1. 100% On-Device Privacy: All processing, encryption, and conversions occur inside your local browser memory via WebAssembly and Web Crypto API. Zero documents, telemetry, or data ever leave your Mac.</p>
+        <p>2. Studio Master Resolution: All PDF renderings and extractions maintain up to 300 DPI Ultra-HD resolution, ensuring lossless print-ready clarity across all tools unless compression is explicitly chosen.</p>
+      </div>
+      <div class="apple-footer-divider"></div>
+      <div class="apple-footer-bottom">
+        <div class="apple-footer-copyright">
+          <span>Copyright © 2026 PDFCraft Inc. All rights reserved. Designed to look and feel right at home on macOS Sequoia & visionOS.</span>
+        </div>
+        <div class="apple-footer-links">
+          <a href="#privacy">Privacy Policy</a>
+          <span class="pipe">|</span>
+          <a href="#terms">Terms of Use</a>
+          <span class="pipe">|</span>
+          <a href="#security">Architecture</a>
+          <span class="pipe">|</span>
+          <a href="#legal">Legal</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- App Script -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

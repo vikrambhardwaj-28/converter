@@ -1,0 +1,23 @@
+{
+  "name": "ilovepdf-clone",
+  "version": "1.0.0",
+  "description": "Full-featured modern iLovePDF clone with 100% client-side privacy, rich UI, and English + Hindi support",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "pdf",
+    "ilovepdf",
+    "pdf-tools",
+    "merge-pdf",
+    "split-pdf",
+    "compress-pdf",
+    "sign-pdf",
+    "watermark-pdf"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
