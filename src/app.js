@@ -12,7 +12,7 @@ import {
 
 // Application State
 const state = {
-  lang: 'hi', // default to Hindi as requested by the user, with easy 1-click toggle to English
+  lang: 'en', // 100% English UI per user request
   theme: 'light',
   currentCategory: 'all',
   currentToolId: null,
@@ -385,25 +385,17 @@ function toggleTheme() {
   applyTheme(state.theme);
 }
 
-// Language / i18n Management
+// Language Management (100% English UI)
 function initLanguage() {
-  const saved = localStorage.getItem('pdfcraft_lang') || 'hi';
-  state.lang = saved;
+  state.lang = 'en';
+  localStorage.setItem('pdfcraft_lang', 'en');
   updateLanguageUI();
 }
 
 function toggleLanguage() {
-  state.lang = state.lang === 'hi' ? 'en' : 'hi';
-  localStorage.setItem('pdfcraft_lang', state.lang);
+  state.lang = 'en';
+  localStorage.setItem('pdfcraft_lang', 'en');
   updateLanguageUI();
-  renderToolsGrid();
-  if (state.currentToolId) {
-    if (state.uploadedFiles.length > 0) {
-      setupActiveWorkspace();
-    } else {
-      openToolWorkspace(state.currentToolId);
-    }
-  }
 }
 
 function t(key, subkey = null) {
@@ -420,18 +412,10 @@ function getToolT(toolId, field) {
 }
 
 function updateLanguageUI() {
-  const isHi = state.lang === 'hi';
-  const flagEl = document.getElementById('lang-flag');
-  const labelEl = document.getElementById('lang-label');
-  if (flagEl) flagEl.textContent = isHi ? '🇬🇧' : '🇮🇳';
-  if (labelEl) labelEl.textContent = isHi ? 'English' : 'हिन्दी';
-
   // Hero & Nav
-  document.getElementById('site-title-text').textContent = t('siteTitle');
-  document.getElementById('privacy-badge-text').textContent = t('privacyBadge');
-  document.getElementById('hero-title-text').textContent = isHi 
-    ? 'आपके पसंदीदा सभी पीडीएफ टूल्स, बिल्कुल प्राइवेट और फ्री'
-    : 'Every PDF tool you need, right in your browser';
+  document.getElementById('site-title-text').textContent = t('siteTitle') || 'PDFCraft';
+  document.getElementById('privacy-badge-text').textContent = t('privacyBadge') || '100% On-Device Privacy • Studio Master 300 DPI Quality';
+  document.getElementById('hero-title-text').textContent = 'Every PDF tool you need, right in your browser';
   document.getElementById('hero-sub-text').textContent = t('siteTagline');
   document.getElementById('tool-search-input').placeholder = t('searchPlaceholder');
 
@@ -544,6 +528,7 @@ function openToolWorkspace(toolId) {
 
 // Return to Dashboard
 function returnToDashboard() {
+  stopCameraStream();
   state.currentToolId = null;
   state.uploadedFiles = [];
   document.getElementById('workspace-view').classList.remove('active');
@@ -1428,25 +1413,38 @@ function renderRotateWorkspace(preview, controls) {
   btn180.addEventListener('click', () => { state.activeRotation = 180; highlightBtn(btn180); });
 }
 
-// 7. Organize Workspace (Interactive visual page management)
+// 7. Organize Workspace (Interactive visual page sequence management & reordering)
 async function renderOrganizeWorkspace(preview, controls) {
   const file = state.uploadedFiles[0];
   preview.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3 style="font-size: 1.15rem; font-weight: 700;">${state.lang === 'hi' ? 'पेज व्यवस्थित करें (री-ऑर्डर / हटाएं)' : 'Organize Pages'}</h3>
-      <span style="font-size: 0.85rem; color: var(--text-muted);" id="organize-page-count">Loading pages...</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 700;">Organize & Reorder Pages</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Drag thumbnails or use left/right arrows to change page sequence.</p>
+      </div>
+      <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);" id="organize-page-count">Loading pages...</span>
     </div>
     <div class="thumbnail-grid" id="organize-grid"></div>
   `;
 
   controls.innerHTML = `
-    <div style="background: var(--bg-main); padding: 1rem; border-radius: 12px; border: 1px solid var(--card-border);">
-      <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">${state.lang === 'hi' ? 'पेज कैसे मैनेज करें' : 'How to Organize'}</h4>
-      <ul style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; padding-left: 1.2rem;">
-        <li>${state.lang === 'hi' ? 'तीर के बटन से पेजों का क्रम बदलें।' : 'Use arrows to change page order.'}</li>
-        <li>${state.lang === 'hi' ? 'ट्रैश आइकन से गैर-ज़रूरी पेज हटाएं।' : 'Use trash icon to delete unwanted pages.'}</li>
-        <li>${state.lang === 'hi' ? 'रोटेट आइकन से किसी खास पेज को घुमाएं।' : 'Use rotate icon to turn specific pages.'}</li>
-      </ul>
+    <div class="pro-step-card">
+      <span class="pro-step-badge">PAGE REORDERING CONTROLS</span>
+      <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.85rem;">
+        Easily reorder, rotate, or delete pages before saving. Drag pages with your mouse/touchpad or use the quick buttons below.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <button class="secondary-btn" id="btn-org-reverse" style="justify-content: center; font-size: 0.82rem; font-weight: 600;">
+          <i data-lucide="arrow-left-right" style="width: 14px; height: 14px;"></i> Reverse Page Order
+        </button>
+        <button class="secondary-btn" id="btn-org-reset" style="justify-content: center; font-size: 0.82rem; font-weight: 600;">
+          <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Reset to Original Order
+        </button>
+        <button class="secondary-btn" id="btn-org-rotate-all" style="justify-content: center; font-size: 0.82rem; font-weight: 600;">
+          <i data-lucide="rotate-cw" style="width: 14px; height: 14px;"></i> Rotate All 90° CW
+        </button>
+      </div>
     </div>
   `;
 
@@ -1456,71 +1454,184 @@ async function renderOrganizeWorkspace(preview, controls) {
   const doc = await pdfjs.getDocument({ data: buffer }).promise;
   const total = doc.numPages;
 
-  state.organizePages = Array.from({ length: total }, (_, i) => ({
-    origIndex: i,
-    rotation: 0
-  }));
-
-  document.getElementById('organize-page-count').textContent = `${total} ${t('pageCount')}`;
-
-  const grid = document.getElementById('organize-grid');
-  grid.innerHTML = '';
-
+  const renderedCanvases = [];
   for (let i = 0; i < total; i++) {
-    const card = document.createElement('div');
-    card.className = 'page-thumbnail-card';
-    card.id = `org-card-${i}`;
-
     const canvas = document.createElement('canvas');
     const page = await doc.getPage(i + 1);
     const viewport = page.getViewport({ scale: 0.35 });
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-
-    card.innerHTML = `
-      <div class="thumb-canvas-wrapper" id="thumb-canvas-${i}"></div>
-      <div class="page-thumbnail-num">${t('pageCount')} ${i + 1}</div>
-      <div class="page-card-actions">
-        <button class="mini-action-btn btn-org-rotate" data-idx="${i}" title="${getToolT('organize', 'rotatePage')}">
-          <i data-lucide="rotate-cw" style="width: 13px; height: 13px;"></i>
-        </button>
-        <button class="mini-action-btn btn-org-del" data-idx="${i}" title="${getToolT('organize', 'deletePage')}" style="color: #dc2626;">
-          <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
-        </button>
-      </div>
-    `;
-
-    card.querySelector(`#thumb-canvas-${i}`).appendChild(canvas);
-    grid.appendChild(card);
+    renderedCanvases.push(canvas);
   }
 
-  refreshLucide();
+  state.organizePages = Array.from({ length: total }, (_, i) => ({
+    origIndex: i,
+    rotation: 0,
+    deleted: false,
+    canvas: renderedCanvases[i]
+  }));
 
-  // Attach organize action handlers
-  grid.querySelectorAll('.btn-org-rotate').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(btn.dataset.idx, 10);
-      state.organizePages[idx].rotation = (state.organizePages[idx].rotation + 90) % 360;
-      const cardCanvas = grid.querySelector(`#thumb-canvas-${idx} canvas`);
-      if (cardCanvas) {
-        cardCanvas.style.transform = `rotate(${state.organizePages[idx].rotation}deg)`;
-        cardCanvas.style.transition = 'transform 0.2s ease';
+  function updateOrganizeView() {
+    const grid = document.getElementById('organize-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const activeList = state.organizePages.filter((p) => !p.deleted);
+    const countEl = document.getElementById('organize-page-count');
+    if (countEl) {
+      countEl.textContent = `${activeList.length} of ${total} Pages Active`;
+    }
+
+    state.organizePages.forEach((pageItem, currentIndex) => {
+      const card = document.createElement('div');
+      card.className = `page-thumbnail-card ${pageItem.deleted ? 'page-deleted' : ''}`;
+      card.draggable = !pageItem.deleted;
+      card.dataset.index = currentIndex;
+      card.id = `org-card-${currentIndex}`;
+
+      if (pageItem.deleted) {
+        card.style.opacity = '0.3';
+        card.style.filter = 'grayscale(1)';
       }
+
+      card.innerHTML = `
+        <div class="page-sequence-badge">#${currentIndex + 1}</div>
+        <div class="thumb-canvas-wrapper" id="thumb-canvas-${currentIndex}" style="overflow: hidden; border-radius: 8px;"></div>
+        <div class="page-thumbnail-num">Orig. Page ${pageItem.origIndex + 1}</div>
+        <div class="page-card-actions">
+          <button class="mini-action-btn btn-org-move-left" data-idx="${currentIndex}" title="Move Left (Earlier)" ${currentIndex === 0 || pageItem.deleted ? 'disabled' : ''}>
+            <i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i>
+          </button>
+          <button class="mini-action-btn btn-org-move-right" data-idx="${currentIndex}" title="Move Right (Later)" ${currentIndex === state.organizePages.length - 1 || pageItem.deleted ? 'disabled' : ''}>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+          </button>
+          <button class="mini-action-btn btn-org-rotate" data-idx="${currentIndex}" title="Rotate 90° CW" ${pageItem.deleted ? 'disabled' : ''}>
+            <i data-lucide="rotate-cw" style="width: 13px; height: 13px;"></i>
+          </button>
+          <button class="mini-action-btn btn-org-del" data-idx="${currentIndex}" title="${pageItem.deleted ? 'Restore Page' : 'Delete Page'}" style="color: ${pageItem.deleted ? '#059669' : '#dc2626'};">
+            <i data-lucide="${pageItem.deleted ? 'rotate-ccw' : 'trash-2'}" style="width: 13px; height: 13px;"></i>
+          </button>
+        </div>
+      `;
+
+      // Render stored canvas
+      const canvasClone = document.createElement('canvas');
+      canvasClone.width = pageItem.canvas.width;
+      canvasClone.height = pageItem.canvas.height;
+      const ctx = canvasClone.getContext('2d');
+      ctx.drawImage(pageItem.canvas, 0, 0);
+      canvasClone.style.transform = `rotate(${pageItem.rotation}deg)`;
+      canvasClone.style.transition = 'transform 0.2s ease';
+      card.querySelector(`#thumb-canvas-${currentIndex}`).appendChild(canvasClone);
+
+      // Drag and Drop support
+      card.addEventListener('dragstart', (e) => {
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', currentIndex.toString());
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        grid.querySelectorAll('.page-thumbnail-card').forEach((c) => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      });
+
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        const toIdx = currentIndex;
+        if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+          const [moved] = state.organizePages.splice(fromIdx, 1);
+          state.organizePages.splice(toIdx, 0, moved);
+          updateOrganizeView();
+          showToast(`Page reordered to position #${toIdx + 1}`);
+        }
+      });
+
+      grid.appendChild(card);
     });
+
+    refreshLucide();
+
+    // Attach button actions
+    grid.querySelectorAll('.btn-org-move-left').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        if (idx > 0) {
+          const temp = state.organizePages[idx];
+          state.organizePages[idx] = state.organizePages[idx - 1];
+          state.organizePages[idx - 1] = temp;
+          updateOrganizeView();
+          showToast(`Moved Page to position #${idx}`);
+        }
+      });
+    });
+
+    grid.querySelectorAll('.btn-org-move-right').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        if (idx < state.organizePages.length - 1) {
+          const temp = state.organizePages[idx];
+          state.organizePages[idx] = state.organizePages[idx + 1];
+          state.organizePages[idx + 1] = temp;
+          updateOrganizeView();
+          showToast(`Moved Page to position #${idx + 2}`);
+        }
+      });
+    });
+
+    grid.querySelectorAll('.btn-org-rotate').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        state.organizePages[idx].rotation = (state.organizePages[idx].rotation + 90) % 360;
+        updateOrganizeView();
+      });
+    });
+
+    grid.querySelectorAll('.btn-org-del').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        state.organizePages[idx].deleted = !state.organizePages[idx].deleted;
+        updateOrganizeView();
+        showToast(state.organizePages[idx].deleted ? `Page ${state.organizePages[idx].origIndex + 1} deleted` : `Page ${state.organizePages[idx].origIndex + 1} restored`);
+      });
+    });
+  }
+
+  updateOrganizeView();
+
+  // Attach controls actions
+  document.getElementById('btn-org-reverse')?.addEventListener('click', () => {
+    state.organizePages.reverse();
+    updateOrganizeView();
+    showToast('Page order reversed');
   });
 
-  grid.querySelectorAll('.btn-org-del').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(btn.dataset.idx, 10);
-      const card = document.getElementById(`org-card-${idx}`);
-      if (card) {
-        card.style.opacity = '0.25';
-        card.style.pointerEvents = 'none';
-      }
-      state.organizePages[idx].deleted = true;
-      showToast(state.lang === 'hi' ? `पेज ${idx + 1} हटाया गया` : `Page ${idx + 1} removed`);
+  document.getElementById('btn-org-reset')?.addEventListener('click', () => {
+    state.organizePages.sort((a, b) => a.origIndex - b.origIndex);
+    state.organizePages.forEach((p) => { p.rotation = 0; p.deleted = false; });
+    updateOrganizeView();
+    showToast('Reset to original page sequence');
+  });
+
+  document.getElementById('btn-org-rotate-all')?.addEventListener('click', () => {
+    state.organizePages.forEach((p) => {
+      if (!p.deleted) p.rotation = (p.rotation + 90) % 360;
     });
+    updateOrganizeView();
+    showToast('All pages rotated 90° clockwise');
   });
 }
 
@@ -1843,18 +1954,117 @@ function renderPageNumbersWorkspace(preview, controls) {
   `;
 }
 
-// 10. Sign Workspace (Draw, Type, Upload signature)
+// Active Camera State
+let activeCameraStream = null;
+let capturedRawCanvas = null;
+let currentCameraThreshold = 165;
+let currentCameraInkColor = '#0b0f19';
+
+function stopCameraStream() {
+  if (activeCameraStream) {
+    activeCameraStream.getTracks().forEach((track) => track.stop());
+    activeCameraStream = null;
+  }
+}
+
+function extractTransparentSignature(sourceCanvas, threshold = 165, inkColor = '#0b0f19') {
+  const ctx = sourceCanvas.getContext('2d');
+  const w = sourceCanvas.width;
+  const h = sourceCanvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = w;
+  outCanvas.height = h;
+  const outCtx = outCanvas.getContext('2d');
+  const outImgData = outCtx.createImageData(w, h);
+  const outData = outImgData.data;
+
+  let minX = w, maxX = 0, minY = h, maxY = 0;
+  let hasInk = false;
+
+  let targetR = 11, targetG = 15, targetB = 25;
+  if (inkColor === '#0071e3') {
+    targetR = 0; targetG = 113; targetB = 227;
+  } else if (inkColor === '#1e3a8a') {
+    targetR = 30; targetG = 58; targetB = 138;
+  }
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    if (lum < threshold) {
+      const pxIndex = i / 4;
+      const x = pxIndex % w;
+      const y = Math.floor(pxIndex / w);
+
+      const strength = (threshold - lum) / threshold;
+      const alpha = Math.min(255, Math.max(0, Math.floor(strength * 255 * 2.8)));
+
+      if (alpha > 25) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+        hasInk = true;
+      }
+
+      if (inkColor === 'original') {
+        outData[i] = r;
+        outData[i + 1] = g;
+        outData[i + 2] = b;
+      } else {
+        outData[i] = targetR;
+        outData[i + 1] = targetG;
+        outData[i + 2] = targetB;
+      }
+      outData[i + 3] = alpha;
+    } else {
+      outData[i] = 255;
+      outData[i + 1] = 255;
+      outData[i + 2] = 255;
+      outData[i + 3] = 0;
+    }
+  }
+
+  outCtx.putImageData(outImgData, 0, 0);
+
+  // Auto-crop bounding box with 14px padding
+  if (hasInk && maxX > minX && maxY > minY) {
+    const pad = 14;
+    const cropX = Math.max(0, minX - pad);
+    const cropY = Math.max(0, minY - pad);
+    const cropW = Math.min(w - cropX, (maxX - minX) + pad * 2);
+    const cropH = Math.min(h - cropY, (maxY - minY) + pad * 2);
+
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = cropW;
+    croppedCanvas.height = cropH;
+    const croppedCtx = croppedCanvas.getContext('2d');
+    croppedCtx.drawImage(outCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+    return croppedCanvas.toDataURL('image/png');
+  }
+
+  return outCanvas.toDataURL('image/png');
+}
+
+// 10. Sign Workspace (Draw, Type, macOS Preview Camera Scan & Draggable Placement)
 async function renderSignWorkspace(preview, controls) {
   const file = state.uploadedFiles[0];
 
   preview.innerHTML = `
-    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem;">${getToolT('sign', 'name')}</h3>
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem;">Sign Document</h3>
     
-    <!-- Signature Creator Modes -->
-    <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem;">
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <button class="nav-tab-btn active" id="tab-sig-draw">${getToolT('sign', 'drawTab')}</button>
-        <button class="nav-tab-btn" id="tab-sig-type">${getToolT('sign', 'typeTab')}</button>
+    <!-- Signature Creator Modes (macOS Preview Style) -->
+    <div style="background: var(--bg-main); border: 1.5px solid var(--card-border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <button class="nav-tab-btn active" id="tab-sig-draw">✍️ Draw Signature</button>
+        <button class="nav-tab-btn" id="tab-sig-type">⌨️ Type Name</button>
+        <button class="nav-tab-btn" id="tab-sig-camera">📷 Camera Scan (macOS Style)</button>
       </div>
 
       <!-- Mode 1: Draw Canvas -->
@@ -1864,49 +2074,133 @@ async function renderSignWorkspace(preview, controls) {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 0.82rem; font-weight: 600;">${getToolT('sign', 'signatureColor')}:</span>
-            <button class="sig-color-btn" data-color="#000000" style="width: 24px; height: 24px; border-radius: 50%; background: #000000; border: 2px solid white; cursor: pointer;"></button>
-            <button class="sig-color-btn" data-color="#2563eb" style="width: 24px; height: 24px; border-radius: 50%; background: #2563eb; border: 2px solid white; cursor: pointer;"></button>
-            <button class="sig-color-btn" data-color="#dc2626" style="width: 24px; height: 24px; border-radius: 50%; background: #dc2626; border: 2px solid white; cursor: pointer;"></button>
+            <span style="font-size: 0.82rem; font-weight: 600;">Ink Color:</span>
+            <button class="sig-color-btn" data-color="#000000" style="width: 24px; height: 24px; border-radius: 50%; background: #000000; border: 2px solid white; cursor: pointer;" title="Black"></button>
+            <button class="sig-color-btn" data-color="#2563eb" style="width: 24px; height: 24px; border-radius: 50%; background: #2563eb; border: 2px solid white; cursor: pointer;" title="Blue"></button>
+            <button class="sig-color-btn" data-color="#dc2626" style="width: 24px; height: 24px; border-radius: 50%; background: #dc2626; border: 2px solid white; cursor: pointer;" title="Red"></button>
           </div>
-          <button class="secondary-btn" id="btn-clear-sig" style="padding: 0.4rem 0.85rem; font-size: 0.82rem;">${getToolT('sign', 'clearSign')}</button>
+          <button class="secondary-btn" id="btn-clear-sig" style="padding: 0.4rem 0.85rem; font-size: 0.82rem;">Clear Canvas</button>
         </div>
       </div>
 
       <!-- Mode 2: Type Text -->
       <div id="sig-type-pane" style="display: none;">
-        <input type="text" id="sig-type-input" class="signature-types-input" placeholder="Type your signature...">
+        <input type="text" id="sig-type-input" class="signature-types-input" placeholder="Type your signature here...">
+      </div>
+
+      <!-- Mode 3: Apple Camera Paper Scan -->
+      <div id="sig-camera-pane" style="display: none;">
+        <!-- Stage 1: Live Video -->
+        <div id="camera-live-stage">
+          <div class="camera-sig-container">
+            <video id="camera-video" class="camera-video-element" autoplay playsinline muted></video>
+            <div class="camera-guide-overlay">
+              <div class="camera-guide-box">
+                <div class="camera-guide-line"></div>
+              </div>
+              <div class="camera-guide-tip">
+                <i data-lucide="camera" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                Hold your white paper signature up to the blue line
+              </div>
+            </div>
+          </div>
+          <div class="camera-controls-bar">
+            <button class="primary-btn" id="btn-camera-capture" style="padding: 0.65rem 1.4rem;">
+              <i data-lucide="scan" style="width: 16px; height: 16px;"></i> Capture & Extract Signature
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage 2: Captured & Extracted Preview -->
+        <div id="camera-extract-stage" style="display: none; margin-top: 0.5rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem;">CAPTURED PAPER PHOTO</div>
+              <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 160px; background: #000;">
+                <canvas id="camera-raw-canvas" style="width: 100%; height: auto; display: block;"></canvas>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem;">EXTRACTED TRANSPARENT SIGNATURE</div>
+              <div class="transparency-checkered-bg" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--primary); max-height: 160px; display: flex; align-items: center; justify-content: center; padding: 10px; min-height: 110px;">
+                <img id="camera-extracted-img" style="max-height: 110px; max-width: 100%; object-fit: contain;" alt="Extracted Signature">
+              </div>
+            </div>
+          </div>
+
+          <!-- Threshold and Ink Colors -->
+          <div style="background: var(--glass-bg); padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-top: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label style="font-size: 0.82rem; font-weight: 700;">Paper Filter / Ink Sensitivity:</label>
+              <span id="threshold-val-label" style="font-size: 0.82rem; font-weight: 700; color: var(--primary);">165</span>
+            </div>
+            <input type="range" id="sig-threshold-slider" min="90" max="230" value="165" style="width: 100%; accent-color: var(--primary);">
+
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.75rem; flex-wrap: wrap;">
+              <span style="font-size: 0.8rem; font-weight: 700;">Ink Color:</span>
+              <button class="cam-ink-btn active" data-color="#0b0f19" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--primary); background: #0b0f19; color: white; cursor: pointer;">Deep Black</button>
+              <button class="cam-ink-btn" data-color="#0071e3" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--glass-border); background: #0071e3; color: white; cursor: pointer;">Cupertino Blue</button>
+              <button class="cam-ink-btn" data-color="#1e3a8a" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--glass-border); background: #1e3a8a; color: white; cursor: pointer;">Navy</button>
+              <button class="cam-ink-btn" data-color="original" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); cursor: pointer;">Original Pen</button>
+            </div>
+          </div>
+
+          <div class="camera-controls-bar" style="margin-top: 0.85rem;">
+            <button class="secondary-btn" id="btn-camera-retake">
+              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Retake Paper Scan
+            </button>
+            <button class="primary-btn" id="btn-camera-apply">
+              <i data-lucide="check" style="width: 14px; height: 14px;"></i> Place Signature on PDF
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- PDF Page Preview for Placement -->
     <div>
-      <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">${getToolT('sign', 'dragNote')}</h4>
-      <div style="position: relative; display: inline-block; border: 1.5px solid var(--card-border); border-radius: 12px; overflow: hidden;" id="sig-preview-wrapper">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 700;">Place Signature (Drag stamp or click anywhere on document)</h4>
+        <span style="font-size: 0.78rem; color: var(--primary); font-weight: 600;">Click page to jump signature</span>
+      </div>
+      <div style="position: relative; display: inline-block; border: 1.5px solid var(--card-border); border-radius: 12px; overflow: hidden; max-width: 100%; box-shadow: var(--shadow-sm);" id="sig-preview-wrapper">
         <canvas id="sig-pdf-canvas"></canvas>
-        <div id="sig-draggable-stamp" style="position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); border: 2px dashed var(--primary); padding: 4px; background: rgba(225,29,72,0.08); border-radius: 6px; cursor: move; user-select: none;">
-          <img id="sig-stamp-img" style="max-height: 50px; display: block;" alt="Signature">
+        <div id="sig-draggable-stamp" style="position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); border: 2px dashed var(--primary); padding: 4px; background: rgba(0,113,227,0.1); border-radius: 6px; cursor: move; user-select: none; z-index: 10; display: inline-block; touch-action: none;">
+          <img id="sig-stamp-img" style="max-height: 50px; display: block; pointer-events: none;" alt="Signature">
         </div>
       </div>
     </div>
   `;
 
   controls.innerHTML = `
-    <div class="control-group">
-      <label class="control-label">${state.lang === 'hi' ? 'किस पेज पर साइन करें' : 'Target Page'}</label>
-      <select class="control-select" id="sig-page-select"></select>
-    </div>
+    <div class="pro-step-card">
+      <span class="pro-step-badge">PLACEMENT CONTROLS</span>
+      
+      <div class="control-group">
+        <label class="control-label">Target Page</label>
+        <select class="control-select" id="sig-page-select"></select>
+      </div>
 
-    <div class="control-group">
-      <label class="control-label">${state.lang === 'hi' ? 'हस्ताक्षर का साइज़' : 'Signature Size'}</label>
-      <input type="range" min="15" max="60" value="30" id="sig-width-range" style="accent-color: var(--primary);">
+      <div class="control-group">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+          <label class="control-label">Signature Stamp Width</label>
+          <span id="sig-width-val" style="font-size: 0.82rem; font-weight: 700; color: var(--primary);">30%</span>
+        </div>
+        <input type="range" min="15" max="65" value="30" id="sig-width-range" style="width: 100%; accent-color: var(--primary);">
+      </div>
+
+      <div style="margin-top: 0.85rem; padding: 0.75rem; border-radius: 10px; background: rgba(0, 113, 227, 0.08); border: 1px solid rgba(0, 113, 227, 0.2);">
+        <p style="font-size: 0.8rem; color: var(--text-main); line-height: 1.4;">
+          💡 <strong>Tip:</strong> You can drag the signature directly on the preview or tap anywhere on the PDF to place it instantly.
+        </p>
+      </div>
     </div>
   `;
 
   // Init Signature Drawing Canvas
   initSignatureDrawing();
 
-  // Render Page Preview
+  // Render Page Preview with PDF.js
   const buffer = await PDFEngine.fileToArrayBuffer(file);
   const pdfjs = window.pdfjsLib;
   const doc = await pdfjs.getDocument({ data: buffer }).promise;
@@ -1915,7 +2209,7 @@ async function renderSignWorkspace(preview, controls) {
   for (let p = 1; p <= doc.numPages; p++) {
     const opt = document.createElement('option');
     opt.value = p - 1;
-    opt.textContent = `${t('pageCount')} ${p}`;
+    opt.textContent = `Page ${p}`;
     pageSelect.appendChild(opt);
   }
 
@@ -1934,6 +2228,237 @@ async function renderSignWorkspace(preview, controls) {
     state.signatureState.pageIndex = parseInt(e.target.value, 10);
     await renderSignPage(state.signatureState.pageIndex);
   });
+
+  // Stamp size range listener
+  const widthRange = document.getElementById('sig-width-range');
+  const widthValLabel = document.getElementById('sig-width-val');
+  widthRange?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.signatureState.widthPercent = val;
+    if (widthValLabel) widthValLabel.textContent = `${val}%`;
+    const stampImg = document.getElementById('sig-stamp-img');
+    const wrapper = document.getElementById('sig-preview-wrapper');
+    if (stampImg && wrapper) {
+      stampImg.style.width = `${(wrapper.clientWidth * val) / 100}px`;
+      stampImg.style.maxHeight = 'none';
+    }
+  });
+
+  // Init Draggable Stamp
+  const wrapper = document.getElementById('sig-preview-wrapper');
+  const stamp = document.getElementById('sig-draggable-stamp');
+  if (wrapper && stamp) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startLeft = 0, startTop = 0;
+
+    const updateStampPos = (leftPx, topPx) => {
+      const maxLeft = wrapper.clientWidth - stamp.offsetWidth;
+      const maxTop = wrapper.clientHeight - stamp.offsetHeight;
+      const clampLeft = Math.max(0, Math.min(maxLeft, leftPx));
+      const clampTop = Math.max(0, Math.min(maxTop, topPx));
+
+      stamp.style.left = `${clampLeft}px`;
+      stamp.style.top = `${clampTop}px`;
+      stamp.style.bottom = 'auto';
+      stamp.style.transform = 'none';
+
+      state.signatureState.xPercent = (clampLeft / wrapper.clientWidth) * 100;
+      state.signatureState.yPercent = Math.max(0, ((wrapper.clientHeight - (clampTop + stamp.offsetHeight)) / wrapper.clientHeight) * 100);
+    };
+
+    stamp.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startLeft = stamp.offsetLeft;
+      startTop = stamp.offsetTop;
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      updateStampPos(startLeft + dx, startTop + dy);
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    stamp.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      startLeft = stamp.offsetLeft;
+      startTop = stamp.offsetTop;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      updateStampPos(startLeft + dx, startTop + dy);
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    wrapper.addEventListener('click', (e) => {
+      if (e.target === stamp || stamp.contains(e.target)) return;
+      const rect = wrapper.getBoundingClientRect();
+      const clickX = e.clientX - rect.left - (stamp.offsetWidth / 2);
+      const clickY = e.clientY - rect.top - (stamp.offsetHeight / 2);
+      updateStampPos(clickX, clickY);
+    });
+  }
+
+  // Camera Mode Logic
+  const tabDraw = document.getElementById('tab-sig-draw');
+  const tabType = document.getElementById('tab-sig-type');
+  const tabCamera = document.getElementById('tab-sig-camera');
+  const paneDraw = document.getElementById('sig-draw-pane');
+  const paneType = document.getElementById('sig-type-pane');
+  const paneCamera = document.getElementById('sig-camera-pane');
+
+  const startCamera = async () => {
+    stopCameraStream();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      activeCameraStream = stream;
+      const videoEl = document.getElementById('camera-video');
+      if (videoEl) {
+        videoEl.srcObject = stream;
+        videoEl.play();
+      }
+      document.getElementById('camera-live-stage').style.display = 'block';
+      document.getElementById('camera-extract-stage').style.display = 'none';
+      refreshLucide();
+    } catch (err) {
+      console.error('Camera access error:', err);
+      showToast('Could not access camera. Please allow camera permissions.');
+    }
+  };
+
+  tabDraw?.addEventListener('click', () => {
+    stopCameraStream();
+    tabDraw.classList.add('active');
+    tabType.classList.remove('active');
+    tabCamera.classList.remove('active');
+    paneDraw.style.display = 'block';
+    paneType.style.display = 'none';
+    paneCamera.style.display = 'none';
+    state.signatureState.mode = 'draw';
+    updateSignatureStamp();
+  });
+
+  tabType?.addEventListener('click', () => {
+    stopCameraStream();
+    tabType.classList.add('active');
+    tabDraw.classList.remove('active');
+    tabCamera.classList.remove('active');
+    paneType.style.display = 'block';
+    paneDraw.style.display = 'none';
+    paneCamera.style.display = 'none';
+    state.signatureState.mode = 'type';
+    updateSignatureStamp();
+  });
+
+  tabCamera?.addEventListener('click', () => {
+    tabCamera.classList.add('active');
+    tabDraw.classList.remove('active');
+    tabType.classList.remove('active');
+    paneCamera.style.display = 'block';
+    paneDraw.style.display = 'none';
+    paneType.style.display = 'none';
+    state.signatureState.mode = 'camera';
+    startCamera();
+  });
+
+  // Capture Button Handler
+  document.getElementById('btn-camera-capture')?.addEventListener('click', () => {
+    const videoEl = document.getElementById('camera-video');
+    if (!videoEl || !videoEl.videoWidth) {
+      showToast('Camera is still loading, please wait...');
+      return;
+    }
+
+    const c = document.createElement('canvas');
+    c.width = videoEl.videoWidth;
+    c.height = videoEl.videoHeight;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(videoEl, 0, 0, c.width, c.height);
+    capturedRawCanvas = c;
+
+    // Display raw frame
+    const rawPreviewCanvas = document.getElementById('camera-raw-canvas');
+    if (rawPreviewCanvas) {
+      rawPreviewCanvas.width = c.width;
+      rawPreviewCanvas.height = c.height;
+      rawPreviewCanvas.getContext('2d').drawImage(c, 0, 0);
+    }
+
+    // Run extraction
+    runSignatureExtraction();
+
+    document.getElementById('camera-live-stage').style.display = 'none';
+    document.getElementById('camera-extract-stage').style.display = 'block';
+    refreshLucide();
+  });
+
+  function runSignatureExtraction() {
+    if (!capturedRawCanvas) return;
+    const extractedPng = extractTransparentSignature(capturedRawCanvas, currentCameraThreshold, currentCameraInkColor);
+    const extractedImgEl = document.getElementById('camera-extracted-img');
+    if (extractedImgEl) extractedImgEl.src = extractedPng;
+    state.signatureState.dataUrl = extractedPng;
+  }
+
+  // Threshold Slider
+  const thresholdSlider = document.getElementById('sig-threshold-slider');
+  const thresholdLabel = document.getElementById('threshold-val-label');
+  thresholdSlider?.addEventListener('input', (e) => {
+    currentCameraThreshold = parseInt(e.target.value, 10);
+    if (thresholdLabel) thresholdLabel.textContent = currentCameraThreshold;
+    runSignatureExtraction();
+  });
+
+  // Ink Color Buttons
+  document.querySelectorAll('.cam-ink-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cam-ink-btn').forEach((b) => {
+        b.classList.remove('active');
+        b.style.borderColor = 'var(--glass-border)';
+      });
+      btn.classList.add('active');
+      btn.style.borderColor = 'var(--primary)';
+      currentCameraInkColor = btn.dataset.color;
+      runSignatureExtraction();
+    });
+  });
+
+  // Retake Button
+  document.getElementById('btn-camera-retake')?.addEventListener('click', () => {
+    startCamera();
+  });
+
+  // Apply Button
+  document.getElementById('btn-camera-apply')?.addEventListener('click', () => {
+    stopCameraStream();
+    const stampImg = document.getElementById('sig-stamp-img');
+    if (stampImg && state.signatureState.dataUrl) {
+      stampImg.src = state.signatureState.dataUrl;
+      showToast('Transparent signature applied! Drag to position on PDF.');
+    }
+  });
+
+  refreshLucide();
 }
 
 function initSignatureDrawing() {
@@ -2009,33 +2534,8 @@ function initSignatureDrawing() {
     });
   });
 
-  // Mode switching (Draw vs Type)
-  const tabDraw = document.getElementById('tab-sig-draw');
-  const tabType = document.getElementById('tab-sig-type');
-  const paneDraw = document.getElementById('sig-draw-pane');
-  const paneType = document.getElementById('sig-type-pane');
-
-  tabDraw?.addEventListener('click', () => {
-    tabDraw.classList.add('active');
-    tabType.classList.remove('active');
-    paneDraw.style.display = 'block';
-    paneType.style.display = 'none';
-    state.signatureState.mode = 'draw';
-    updateSignatureStamp();
-  });
-
-  tabType?.addEventListener('click', () => {
-    tabType.classList.add('active');
-    tabDraw.classList.remove('active');
-    paneType.style.display = 'block';
-    paneDraw.style.display = 'none';
-    state.signatureState.mode = 'type';
-    updateSignatureStamp();
-  });
-
-  document.getElementById('sig-type-input')?.addEventListener('input', () => {
-    updateSignatureStamp();
-  });
+  // Initial stamp
+  updateSignatureStamp();
 }
 
 function updateSignatureStamp() {
@@ -2049,7 +2549,7 @@ function updateSignatureStamp() {
       state.signatureState.dataUrl = data;
       stamp.src = data;
     }
-  } else {
+  } else if (state.signatureState.mode === 'type') {
     const text = document.getElementById('sig-type-input')?.value || 'Signature';
     const c = document.createElement('canvas');
     c.width = 400;
@@ -3053,6 +3553,9 @@ async function executeProcessing() {
 
       case 'organize': {
         const validConfigs = state.organizePages.filter((p) => !p.deleted);
+        if (validConfigs.length === 0) {
+          throw new Error('Please keep at least one page in the document.');
+        }
         resultBlob = await PDFEngine.organizePDF(files[0], validConfigs, updateProgress);
         resultFilename = `organized_${files[0].name}`;
         break;
@@ -3110,9 +3613,9 @@ async function executeProcessing() {
         }
         resultBlob = await PDFEngine.signPDF(files[0], state.signatureState.dataUrl, {
           pageIndex: state.signatureState.pageIndex || 0,
-          xPercent: 50,
-          yPercent: 15,
-          widthPercent: 30
+          xPercent: state.signatureState.xPercent ?? 50,
+          yPercent: state.signatureState.yPercent ?? 15,
+          widthPercent: state.signatureState.widthPercent ?? 30
         }, updateProgress);
         resultFilename = `signed_${files[0].name}`;
         break;

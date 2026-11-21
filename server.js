@@ -37,7 +37,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=()');
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=()');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
