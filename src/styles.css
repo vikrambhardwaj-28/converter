@@ -455,6 +455,14 @@ body.dark .apple-sub-ribbon {
     inset 0 1.5px 1.5px rgba(255, 255, 255, 0.95),
     inset 0 -1px 2px rgba(0, 0, 0, 0.04),
     0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 body.dark .nav-tabs {
@@ -475,6 +483,8 @@ body.dark .nav-tabs {
   cursor: pointer;
   transition: all 0.25s var(--ease-spring);
   position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-tab-btn:hover {
@@ -2971,6 +2981,30 @@ body.dark .tone-selector-capsule {
 @media (max-width: 880px) {
   .nav-container {
     padding: 0.75rem 1.15rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .brand {
+    order: 1;
+  }
+
+  .header-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .nav-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.28rem;
+    gap: 0.28rem;
+  }
+
+  .nav-tab-btn {
+    padding: 0.42rem 1rem;
+    font-size: 0.82rem;
   }
 
   .brand-title-text {
